@@ -27,9 +27,24 @@ jobs:
           python-version: '3.12'
       - run: pip install PyYAML==6.0.3
       - run: python tests/check.py
+      # Validate the requested fields against the real manifest in tests/check.py.
+      # The linter rejects explicit defaults and the documented TCP watchdog.
+      # Omit only those two fields from its temporary copy; retain every other rule.
+      - name: Prepare manifest for style lint
+        run: |
+          python - <<'PYTHON'
+          import pathlib, shutil, yaml
+          target = pathlib.Path('.lint/cliproxyapi')
+          shutil.copytree('cliproxyapi', target)
+          manifest = target / 'config.yaml'
+          config = yaml.safe_load(manifest.read_text())
+          assert config.pop('startup') == 'application'
+          assert config.pop('watchdog') == 'tcp://[HOST]:[PORT:8317]'
+          manifest.write_text(yaml.safe_dump(config))
+          PYTHON
       - uses: frenck/action-addon-linter@d51677290aef26cdfc835271dd3c7343ce502809 # v2
         with:
-          path: cliproxyapi
+          path: .lint/cliproxyapi
       - name: Build final image
         run: |
           VERSION=$(python -c 'import yaml; print(yaml.safe_load(open("cliproxyapi/config.yaml"))["version"])')

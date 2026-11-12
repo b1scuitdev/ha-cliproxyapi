@@ -36,7 +36,10 @@ Use the version in `cliproxyapi/config.yaml` and your native HA architecture
 private files on its temporary bind mount. Its provider fixture runs on the
 Docker host and is reached through `host.docker.internal`.
 
-CI runs the HA app linter and tests on native AMD64 and ARM64 runners. Tests cover
+CI runs the HA app linter and tests on native AMD64 and ARM64 runners.
+The pinned linter rejects explicit startup defaults and the Supervisor watchdog.
+CI lints a temporary copy with only those two fields omitted; `tests/check.py`
+checks their exact values in the real manifest against the documented HA settings. Tests cover
 real upstream startup, bootstrap validation, API and management authentication,
 management endpoints and page, file permissions, storage across container
 recreation, unchanged existing config, and SSE through a synthetic provider.
