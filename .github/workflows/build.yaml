@@ -1,0 +1,77 @@
+name: Build, test and publish
+on:
+  pull_request:
+  push:
+    branches: [app]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - run: pip install PyYAML==6.0.3
+      - run: python tests/check.py
+      - uses: frenck/action-addon-linter@d51677290aef26cdfc835271dd3c7343ce502809 # v2
+        with:
+          path: cliproxyapi
+      - name: Build final image
+        run: |
+          VERSION=$(python -c 'import yaml; print(yaml.safe_load(open("cliproxyapi/config.yaml"))["version"])')
+          docker build --build-arg BUILD_ARCH=${{ matrix.arch }} --build-arg BUILD_VERSION="$VERSION" -t tested:local cliproxyapi
+      - run: sudo "$(which python)" tests/smoke.py tested:local
+      - run: docker save tested:local -o /tmp/tested.tar
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: image-${{ matrix.arch }}
+          path: /tmp/tested.tar
+          retention-days: 1
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/app'
+    needs: test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: /tmp/images
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish exactly the tested images
+        run: |
+          VERSION=$(python -c 'import re; print(re.search(r"^version: \"([^\"]+)\"", open("cliproxyapi/config.yaml").read(), re.M)[1])')
+          IMAGE=ghcr.io/b1scuitdev/ha-cliproxyapi
+          # Versioned tags are immutable by policy; increment wrapper revision to rebuild.
+          if docker buildx imagetools inspect "$IMAGE:$VERSION" >/dev/null 2>&1; then
+            echo 'Version already published; retaining immutable tag.'
+            exit 0
+          fi
+          for ARCH in amd64 aarch64; do
+            docker load -i "/tmp/images/image-$ARCH/tested.tar"
+            docker tag tested:local "$IMAGE:$VERSION-$ARCH"
+            docker push "$IMAGE:$VERSION-$ARCH"
+          done
+          docker buildx imagetools create -t "$IMAGE:$VERSION" "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-aarch64"
+          docker buildx imagetools inspect "$IMAGE:$VERSION"
