@@ -80,6 +80,18 @@ holders can access secrets, so protect your backups.
 The management panel's download and automatic update behavior follows upstream.
 Its assets are updated independently of the pinned server image.
 
+## Startup and watchdog
+
+The app starts in the `application` stage, after Home Assistant Core. Enable
+**Watchdog** in the Home Assistant app settings to use the Supervisor TCP check
+on port 8317. It checks whether the listener accepts connections; it does not
+validate provider availability, OAuth sessions, or successful model requests.
+The check uses the app's internal address and container port, even if you change
+the host port mapping. Keep the upstream listener on port 8317 for this check.
+
+See the official [manifest reference](https://contributors.home-assistant.io/apps/reference/configuration/)
+and [startup order](https://contributors.home-assistant.io/apps/how-apps-work/#starting).
+
 ## Updates and backups
 
 New releases are reviewed before publication. Home Assistant detects the app

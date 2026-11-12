@@ -8,6 +8,8 @@ c = yaml.safe_load((ROOT / 'cliproxyapi/config.yaml').read_text())
 assert set(c['arch']) == {'aarch64', 'amd64'}
 assert c['image'] == 'ghcr.io/b1scuitdev/ha-cliproxyapi'
 assert c['ports'] == {'8317/tcp': 8317}
+assert c['startup'] == 'application'
+assert c['watchdog'] == 'tcp://[HOST]:[PORT:8317]'
 assert not any(c.get(k) for k in ('host_network', 'privileged', 'full_access', 'docker_api', 'hassio_api', 'homeassistant_api', 'ingress', 'devices'))
 assert c.get('privileged', []) == []
 assert c['schema'] == dict.fromkeys(c['options'], 'password?')

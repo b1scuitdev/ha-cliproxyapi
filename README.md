@@ -54,6 +54,9 @@ See [T3 setup details](cliproxyapi/DOCS.md#t3-code) for provider configuration.
 Use this service on your trusted LAN or Tailscale network; keep port 8317 off
 the public internet.
 
+Enable **Watchdog** in the Home Assistant app settings to let the Supervisor
+monitor port 8317 and restart the app if its TCP listener becomes unavailable.
+
 ## Updates & Backups
 
 Home Assistant notifies you when a new app version is available. Leave automatic

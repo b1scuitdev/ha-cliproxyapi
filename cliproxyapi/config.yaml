@@ -1,5 +1,5 @@
 name: CLIProxyAPI
-version: "8.0.67-1"
+version: "8.0.67-2"
 slug: cliproxyapi
 description: Original CLIProxyAPI with persistent native configuration and OAuth storage
 url: https://github.com/b1scuitdev/ha-cliproxyapi
@@ -7,7 +7,8 @@ arch:
   - aarch64
   - amd64
 image: ghcr.io/b1scuitdev/ha-cliproxyapi
-startup: services
+startup: application
+watchdog: tcp://[HOST]:[PORT:8317]
 ports:
   8317/tcp: 8317
 ports_description:
