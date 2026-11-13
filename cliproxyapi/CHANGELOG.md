@@ -1,3 +1,7 @@
+# 8.0.69-1
+
+Update official CLIProxyAPI to v8.0.69. Review upstream release notes before merging.
+
 # 8.0.67-2
 
 - Start in the application stage, after Home Assistant Core.

@@ -1,4 +1,4 @@
-FROM eceasy/cli-proxy-api:v8.0.67@sha256:2e098c0b3c79571f0c3150c8f27725ab2645b6a463cf6c4f862e4e86343466a1
+FROM eceasy/cli-proxy-api:v8.0.69@sha256:e77c1eecc0e364c1885a4441cdd6487ef305852851f70da723548736065c2e9b
 ARG BUILD_VERSION
 ARG BUILD_ARCH
 LABEL io.hass.type="app" io.hass.version="${BUILD_VERSION}" io.hass.arch="${BUILD_ARCH}" \

@@ -1,5 +1,5 @@
 name: CLIProxyAPI
-version: "8.0.67-2"
+version: "8.0.69-1"
 slug: cliproxyapi
 description: Original CLIProxyAPI with persistent native configuration and OAuth storage
 url: https://github.com/b1scuitdev/ha-cliproxyapi
