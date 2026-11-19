@@ -1,3 +1,7 @@
+# 8.0.79-1
+
+Update official CLIProxyAPI to v8.0.79. Review upstream release notes before merging.
+
 # 8.0.77-1
 
 Update official CLIProxyAPI to v8.0.77. Review upstream release notes before merging.
